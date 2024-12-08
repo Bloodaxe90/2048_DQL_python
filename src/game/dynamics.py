@@ -2,15 +2,15 @@ import random
 import numpy as np
 
 
-def check_terminal(state: np.ndarray) -> str:
-    if check_win(state):
+def check_terminal(state: np.ndarray, win_val: int= 2048) -> str:
+    if check_win(state, win_val):
         return "W"
     elif check_loss(state):
         return "L"
     else:
         return ""
 
-def check_win(state: np.ndarray, win_val: int= 2048 ) -> bool:
+def check_win(state: np.ndarray, win_val) -> bool:
     return any(val == win_val for val in state.flat)
 
 def check_loss(state: np.ndarray) -> int:

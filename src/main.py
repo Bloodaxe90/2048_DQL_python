@@ -4,6 +4,7 @@ from src.UI.application import Application
 
 
 def main():
+    print("Started")
     app = QApplication([])
     window = Application()
     window.show()

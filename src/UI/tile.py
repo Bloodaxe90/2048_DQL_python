@@ -20,7 +20,7 @@ class Tile:
                 1024: QColor("#40C4FF"),  # Sky blue
                 2048: QColor("#7C4DFF"),  # Purple
             }
-        self.change_value(2)
+        self.change_value(0)
 
 
     def change_value(self, value: int):
