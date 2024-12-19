@@ -14,12 +14,9 @@ class Default(Twenty48):
         if not self.check_action(action):
             raise ValueError("Invalid Action")
 
-        move(self.environment, action)
-        merge(self.environment, action)
-        move(self.environment, action)
-        create_random(self.environment)
+        game_step(self.environment, action)
 
-        result: str= check_terminal(self.environment, 16)
+        result: str= check_terminal(self.environment, self.ACTIONS)
         if result in ("W", "L"):
             self.controller.game_over(result)
         self.controller.set_board(self.environment)

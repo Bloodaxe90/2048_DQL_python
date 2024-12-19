@@ -9,7 +9,7 @@ class Twenty48:
         self.environment: np.ndarray = np.zeros((4,4))
         self.ACTIONS: list= ["UP", "DOWN", "LEFT", "RIGHT"]
         self.setup()
-
+        self.total = 0
     def check_action(self, action: str) -> bool:
         return action in self.ACTIONS
 
@@ -22,6 +22,9 @@ class Twenty48:
     def setup(self):
         create_random(self.environment)
         create_random(self.environment)
+
+    def copy(self) -> np.ndarray:
+        return self.environment.copy()
 
     def clear(self):
         self.environment = np.zeros((4,4))
