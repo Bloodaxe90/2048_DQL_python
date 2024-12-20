@@ -16,7 +16,7 @@ class Default(Twenty48):
 
         game_step(self.environment, action)
 
-        result: str= check_terminal(self.environment, self.ACTIONS)
+        result: str= self.check_terminal()
         if result in ("W", "L"):
             self.controller.game_over(result)
         self.controller.set_board(self.environment)

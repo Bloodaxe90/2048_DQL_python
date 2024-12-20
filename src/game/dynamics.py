@@ -2,35 +2,18 @@ import random
 import numpy as np
 
 
-def game_step(state: np.ndarray, action: str) -> tuple:
+def game_step(state: np.ndarray, action: str):
     moved = move(state, action)
-    merged_vals = merge(state, action)
-    if moved or merged_vals:
+    merged = merge(state, action)
+    if moved or merged:
         move(state, action)
         create_random(state)
-
-    return moved, merged_vals
-
-def check_terminal(state: np.ndarray, actions: list, win_val: int= 2048) -> str:
-    if check_win(state, win_val):
-        return "W"
-    elif check_loss(state, actions):
-        return "L"
-    else:
-        return ""
-
-def check_win(state: np.ndarray, win_val) -> bool:
-    return np.any(state.flatten() == win_val)
-
-def check_loss(state: np.ndarray, actions: list) -> bool:
-    if check_full(state):
-        return  all(not merge(state.copy(), action) for action in actions)
 
 def check_full(state: np.ndarray) -> bool:
     return not empty(state)
 
 def move(state: np.ndarray, action: str) -> bool:
-    old_state = state.copy()
+    moved = False
     for i in range(len(state)):
 
         free_pos = 0 if action in ("UP", "LEFT") else len(state) - 1 # "left" or "right"
@@ -47,15 +30,16 @@ def move(state: np.ndarray, action: str) -> bool:
                 if old_xy != new_xy:
                     state[new_xy] = state[old_xy]
                     delete(state, old_xy)
+                    moved = True
 
                 free_pos += 1 if action in ("UP", "LEFT") else -1
 
-    return not np.array_equal(old_state, state) #if arrays are equal then a move has not occured
+    return moved
                 
                 
 
-def merge(state: np.ndarray, action: str) -> list:
-    merge_values = []
+def merge(state: np.ndarray, action: str) -> bool:
+    merged = False
     for i in range(len(state)):
         for j in get_moving_range(state, action):
             old_xy = (j, i) if action in ("UP", "DOWN") else (i, j) # "left" or "right"
@@ -65,9 +49,9 @@ def merge(state: np.ndarray, action: str) -> list:
                 new_value = state[new_xy] * 2
                 state[new_xy] = new_value
                 delete(state, old_xy)
-                merge_values.append(new_value)
+                merged = True
 
-    return merge_values
+    return merged
 
 def get_invalid_actions(state: np.ndarray, actions: list) -> list:
     invalid_actions = []

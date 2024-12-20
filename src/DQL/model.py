@@ -21,6 +21,7 @@ class DQCNN(nn.Module):
     def __init__(self, input_neurons: int, hidden_neurons: tuple, output_neurons: int, state_size: int, dropout: float = 0.5):
         super().__init__()
 
+        self.input_neurons = input_neurons
         self.input_block = nn.Sequential(
             CustomConv2D(input_neurons= input_neurons,
                       output_neurons= hidden_neurons[0],
