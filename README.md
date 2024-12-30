@@ -11,6 +11,7 @@ This was a great success and I learnt alot along the way, after that I set to wo
 successfully implemented deep q leanring on 2048
 
 In the inference notebook section you can see the results of my trained 30000 episode agent and that it reached a score of 2048, 
-if trained for longer the agent could reach this value more consitently, the ba
+if trained for longer the agent could reach this value more consitently, the base line results where the agent uses a random policy can 
+be seen at the bottom of the experiment notebook
 
 
