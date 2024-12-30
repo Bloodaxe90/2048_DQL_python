@@ -1,7 +1,11 @@
 import math
 import torch
 from torch import nn
+from torch.utils.tensorboard import SummaryWriter
+
 from src.game.dynamics import *
+from datetime import datetime
+import os
 
 def set_seed(seed: int):
     torch.manual_seed(seed)
@@ -22,9 +26,8 @@ def get_reward(current_state, next_state):
 
     return reward
 
-def make_prediction(model: nn.Module, state: np.ndarray, input_neurons, device: str) -> torch.tensor:
+def make_prediction(model: nn.Module, state: torch.Tensor, device: str) -> torch.tensor:
     model.eval()
-    state = one_hot_states([state], input_neurons, device)
     with torch.inference_mode():
         pred = model(state).to(device)
     return pred
@@ -39,3 +42,9 @@ def one_hot_states(states: list[np.ndarray], num_classes: int, device: str) -> t
     states_tensor = torch.Tensor(np.array(states_logged)).long().to(device)
 
     return torch.nn.functional.one_hot(states_tensor, num_classes= num_classes).float().to(device).permute(0, 3, 1, 2)
+
+def create_summary_writer(model: str, trail_name: str) -> torch.utils.tensorboard.SummaryWriter:
+    timestamp = datetime.now().strftime("%Y-%m-%d")
+    log_dir = os.path.join("resources/runs", timestamp, model, trail_name)
+
+    return SummaryWriter(log_dir=log_dir)

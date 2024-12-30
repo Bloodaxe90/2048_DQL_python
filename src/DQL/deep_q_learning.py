@@ -1,67 +1,69 @@
+import os.path
+
 import torch.optim
-
-from src.DQL.model import DQCNN
-from src.DQL.replay_buffer import ReplayBuffer
+from src.DQL.deep_q_agent import DeepQAgent
+from src.DQL.models import DQCNN, BasicDQCNN
 from src.utils.dq_utils import *
-from src.game.dynamics import game_step
-from src.game.tweny48 import Twenty48
+from src.utils.save_load import save_model
+from datetime import datetime
+import torch.distributed as dist
+import torch.multiprocessing as mp
 
 
-class DeepQLearning(Twenty48):
+class DeepQLearning:
 
     def __init__(self,
-                 replay_buffer: ReplayBuffer,
+                 agent: DeepQAgent,
                  loss_fn: nn.Module,
-                 hidden_neurons: tuple,
                  batch_size: int = 32,
                  alpha: float = 0.00005,
                  gamma: float = 0.9,
-                 max_epsilon: float = 0.9,
-                 min_epsilon: float = 0.01,
-                 win_val: int = 2048,
-                 device: str = "cpu",
                  ):
-        super().__init__(win_val= win_val)
-        self.input_neurons: int = int(math.log2(self.win_val) +1)
-        self.hidden_neurons: tuple = hidden_neurons
-        self.main_network: DQCNN = self.create_network().to(device)
-        self.target_network: DQCNN = self.create_network().to(device)
+        self.device = get_device()
+        self.agent = agent
+        self.target_network = BasicDQCNN(input_neurons=self.agent.input_neurons,
+                     hidden_neurons=self.agent.hidden_neurons,
+                     output_neurons=len(self.agent.ACTIONS),
+                     state_size=len(self.agent)).to(self.device)
 
-        self.replay_buffer: ReplayBuffer = replay_buffer
-
-        self.optimizer = torch.optim.Adam(self.main_network.parameters(), lr= alpha)
+        self.ALPHA = alpha
+        self.optimizer = torch.optim.Adam(self.agent.main_network.parameters(), lr= self.ALPHA)
         self.loss_fn = loss_fn
 
         self.BATCH_SIZE = batch_size
         self.GAMMA = gamma
-        self.MAX_EPSILON = max_epsilon
-        self.MIN_EPSILON = min_epsilon
-        self.epsilon = self.MAX_EPSILON
-        self.device = device
 
     def train(self,
               episodes: int,
+              trail_name: str,
               main_update_count: int = 100,
               main_update_freq: int = 1,
-              target_update_freq: int = 20
-              ):
+              target_update_freq: int = 20,
+              model_save_name: str = '',
+    ):
+        writer = create_summary_writer(
+            trail_name= trail_name,
+            model = self.agent.main_network.__class__.__name__
+        )
+        start_time = datetime.now()
+
         total_scores = []
         for episode in range(1, episodes + 1):
             steps = 0
             total_score = 0
             total_loss = 0
             #Run through an episode
-            while self.check_terminal() == "":
-                old_score = np.sum(self.environment)
-                self.interact()
+            while self.agent.check_terminal() == "":
+                old_score = np.sum(self.agent.environment)
+                self.agent.interact()
                 steps += 1
-                total_score += np.sum(self.environment) - old_score
+                total_score += np.sum(self.agent.environment) - old_score
 
             #Decay Epsilon
-            self.decay_epsilon(episode, episodes)
+            self.agent.decay_epsilon(episode, episodes)
 
             #Update main network
-            if len(self.replay_buffer) > self.BATCH_SIZE and episode % main_update_freq == 0:
+            if len(self.agent.replay_buffer) > self.BATCH_SIZE and episode % main_update_freq == 0:
                 for _ in range(main_update_count):
                     total_loss += self.update_main_network()
 
@@ -69,57 +71,77 @@ class DeepQLearning(Twenty48):
             if episode % target_update_freq == 0:
                 self.update_target_network()
 
+            highest_val = np.max(self.agent.environment)
+            loss = total_loss / (main_update_count * main_update_freq)
             print(
                 f"Episode: {episode}"
-                f" | Highest_Val: {np.max(self.environment)}"
+                f" | Highest_Val: {highest_val}"
                 f" | Steps: {steps}"
-                f" | Epsilon: {self.epsilon}"
-                f" | Loss: {total_loss / (main_update_count * main_update_freq)}")
+                f" | Epsilon: {self.agent.epsilon}"
+                f" | Loss: {loss}")
+
 
             total_scores.append(total_score)
             if episode > 50:
-                average = sum(total_scores[-50:]) / 50
-                print(f"Average Score from last 50 episodes: {average}")
+                average_score = sum(total_scores[-50:]) / 50
+                print(f"Average Score from last 50 episodes: {average_score}")
+                writer.add_scalar(tag="AVERAGE_SCORE",
+                                  scalar_value=average_score,
+                                  global_step=episode)
+
+            if episode % 100 == 0 and model_save_name != '':
+                # Save model
+                save_model(model=self.agent.main_network,
+                           target_dir=os.path.join("resources/saved_models/main_net"),
+                           model_name=model_save_name)
+                save_model(model=self.target_network,
+                           target_dir=os.path.join("resources/saved_models/target_net"),
+                           model_name=model_save_name)
+
+            writer.add_scalar(tag= "LOSS",
+                              scalar_value= loss,
+                              global_step= episode)
+            writer.add_scalar(tag="HIGHEST_VALUE",
+                              scalar_value= highest_val,
+                              global_step=episode)
+            writer.add_scalar(tag="EPSILON",
+                              scalar_value=self.agent.epsilon,
+                              global_step=episode)
+            writer.add_scalar(tag="STEPS",
+                              scalar_value=steps,
+                              global_step=episode)
 
             #Reset environment for next episode
-            self.reset()
+            self.agent.reset()
+            end_time = datetime.now()
+            print(end_time-start_time)
+        writer.close()
 
-
-    def interact(self):
-        current_state = self.environment.copy()
-        action = self.get_action()
-        game_step(self.environment, action)
-        reward = get_reward(current_state, self.environment)
-        next_state = self.environment.copy()
-        done = 1 if self.check_terminal() != "" else 0
-
-        if self.check_terminal() != "" or len(self.replay_buffer) == 0 or not np.array_equal(current_state, next_state):
-            self.replay_buffer.push((current_state, action, reward, next_state, done))
 
     def update_target_network(self):
         #Copy the main network parameters into the target networks
-        self.target_network.load_state_dict(self.main_network.state_dict())
+        self.target_network.load_state_dict(self.agent.main_network.module.state_dict())
 
     def update_main_network(self) -> float:
         #Fetch Transitions
-        transitions = self.replay_buffer.sample(self.BATCH_SIZE)
+        transitions = self.agent.replay_buffer.sample(self.BATCH_SIZE)
 
         #Format Transitions individual components for training
-        states = one_hot_states([states[0] for states in transitions], self.input_neurons, self.device)
-        action_indices = torch.tensor([self.ACTIONS.index(actions[1]) for actions in transitions], device= self.device)
+        states = one_hot_states([states[0] for states in transitions], self.agent.input_neurons, self.device).to("cuda:0")
+        action_indices = torch.tensor([self.agent.ACTIONS.index(actions[1]) for actions in transitions], device= self.device)
         rewards = torch.tensor([rewards[2] for rewards in transitions], dtype= torch.int64, device= self.device)
-        next_states = one_hot_states([next_states[3] for next_states in transitions], self.input_neurons, self.device)
+        next_states = one_hot_states([next_states[3] for next_states in transitions], self.agent.input_neurons, self.device).to("cuda:0")
         dones = torch.tensor([dones[4] for dones in transitions], device= self.device)
 
-        self.main_network.train()
+        self.agent.main_network.train()
         self.target_network.eval()
 
         #prediction for staten s and action a
-        current_q_values = self.main_network(states).to(self.device)
+        current_q_values = self.agent.main_network(states)
 
         #prediction for state s' across actions a'
         with torch.inference_mode():
-            next_q_values = self.target_network(next_states).to(self.device)
+            next_q_values = self.target_network(next_states)
 
         #Get the q_value of the action a taken in s
         current_q_values = current_q_values.gather(1, action_indices.unsqueeze(-1)).squeeze(-1)
@@ -139,44 +161,6 @@ class DeepQLearning(Twenty48):
 
         return loss.item()
 
-    def get_action(self) -> str:
-        if random.random() >= self.epsilon:
-            return self.get_best_action()
-        else:
-            return self.get_random_action()
 
-    def get_random_action(self) -> str:
-        #Get a random action after filtering out invalid actions
-        valid_actions = [action for action in self.ACTIONS if action not in self.get_invalid_actions()]
-        return random.choice(valid_actions)
 
-    def get_best_action(self) -> str:
-        #Make predication
-        prediction = make_prediction(self.main_network, self.environment, self.input_neurons, self.device).squeeze()
-
-        #Mask invalid actions
-        invalid_actions_indices = [self.ACTIONS.index(action) for action in self.ACTIONS
-                                   if action in self.get_invalid_actions()]
-        masked_prediction = prediction.clone()
-        masked_prediction[invalid_actions_indices] = -float('inf')
-        return self.ACTIONS[torch.argmax(masked_prediction).item()]
-
-    def get_invalid_actions(self) -> list:
-        invalid_actions = []
-        for action in self.ACTIONS:
-            current_state = self.environment.copy()
-            game_step(current_state, action)
-            if np.array_equal(current_state, self.environment):
-                invalid_actions.append(action)
-        return invalid_actions
-
-    def decay_epsilon(self, episode, max_episodes, power: float= 1.2):
-        fraction = episode/max_episodes
-        self.epsilon = (self.MAX_EPSILON - self.MIN_EPSILON) * ((1 - fraction) ** power) + self.MIN_EPSILON
-
-    def create_network(self):
-        return DQCNN(input_neurons=self.input_neurons,
-                     hidden_neurons=self.hidden_neurons,
-                     output_neurons=len(self.ACTIONS),
-                     state_size=len(self))
 

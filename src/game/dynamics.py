@@ -42,8 +42,20 @@ def merge(state: np.ndarray, action: str) -> bool:
     merged = False
     for i in range(len(state)):
         for j in get_moving_range(state, action):
-            old_xy = (j, i) if action in ("UP", "DOWN") else (i, j) # "left" or "right"
-            new_xy = (j+1, i) if action in ("UP", "DOWN") else (i, j+1) # "left" or "right"
+            if action == "UP":
+                old_xy = (j + 1, i)
+                new_xy = (j, i)
+            elif action == "DOWN":
+                old_xy = (j, i)
+                new_xy = (j + 1, i)
+            elif action == "LEFT":
+                old_xy = (i, j+1)
+                new_xy = (i, j)
+            elif action == "RIGHT":
+                old_xy = (i, j)
+                new_xy = (i, j+1)
+            else:
+                raise ValueError("Invalid Action")
 
             if j < len(state) -1 and state[old_xy] != 0 and state[old_xy] == state[new_xy]:
                 new_value = state[new_xy] * 2

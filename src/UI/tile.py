@@ -30,6 +30,8 @@ class Tile:
         self.set_colour(value)
 
     def set_colour(self, value: int):
-        colour = self.colours.get(value, QColor("#FFFFFF"))
-        self.label.setStyleSheet(f"background-color: {colour.name()};")
+        colour = self.colours.get(value, QColor("grey"))
+        self.label.setStyleSheet(f"background-color: {colour.name()};"
+                                 f"font-size: 20px;"
+                                 f"color: black;")
 

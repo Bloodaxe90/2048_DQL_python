@@ -1,9 +1,12 @@
+import os.path
+
 import numpy as np
 from PySide6.QtCore import QObject, Slot, Qt
 from PySide6.QtGui import QKeyEvent
-from PySide6.QtWidgets import QWidget, QLabel
+from PySide6.QtWidgets import QWidget, QLabel, QRadioButton
 from src.UI.tile import Tile
 from src.game_modes.default import Default
+from src.game_modes.dq_ai import QAI
 
 
 class Controller(QObject):
@@ -16,26 +19,37 @@ class Controller(QObject):
             [Tile(self.scene.findChild(QLabel, f"L{j}{i}")) for j in range(4)]
             for i in range(4)
         ]
-
+        self.default_radio: QRadioButton = self.scene.findChild(QRadioButton, "DefaultRadio")
+        self.qai_radio: QRadioButton = self.scene.findChild(QRadioButton, "AiRadio")
         self.stop: bool= False
 
         self.default = Default(self)
+        self.qai = QAI(self,
+                       "/Users/Eric/PycharmProjects/2048/resources/saved_models/main_net/the_big_one.pth",
+                       hidden_neurons=(1024, 1024, 1024, 1024))
 
     @Slot()
     def key_pressed(self, event: QKeyEvent):
         if not self.stop:
-            match event.key():
-                case Qt.Key_Up:
-                    self.default.play("UP")
-                case Qt.Key_Down:
-                    self.default.play("DOWN")
-                case Qt.Key_Left:
-                    self.default.play("LEFT")
-                case Qt.Key_Right:
-                    self.default.play("RIGHT")
-        elif event.key() == Qt.Key_Space:
+            if self.default_radio.isChecked():
+                match event.key():
+                    case Qt.Key_Up:
+                        self.default.play("UP")
+                    case Qt.Key_Down:
+                        self.default.play("DOWN")
+                    case Qt.Key_Left:
+                        self.default.play("LEFT")
+                    case Qt.Key_Right:
+                        self.default.play("RIGHT")
+            elif self.qai_radio.isChecked():
+                if event.key() == Qt.Key_S:
+                    self.qai.play()
+        if event.key() == Qt.Key_Space:
             self.reset()
-            self.default.reset()
+            if self.default_radio.isChecked():
+                self.default.reset()
+            elif self.qai_radio.isChecked():
+                self.qai.reset()
 
 
 
