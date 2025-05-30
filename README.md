@@ -7,7 +7,7 @@ Initially, I tried implementing Q-Learning in Java using a tabular approach (htt
 </p>
 
 <p>
-After this failure I learnt Python due to its larger community and mahcine learning recources. After doing this I implemented some other smaller projects to eventually build up the skills to finally re-attempt the 2048 project using Deep Q-Learning.
+After this failure I realised I would finally need to get into neural networks an so I learnt Python due to its larger community and mahcine learning recources. After doing this I implemented some other smaller projects to eventually build up the skills to finally re-attempt the 2048 project using Deep Q-Learning.
 </p>
 
 <p>
