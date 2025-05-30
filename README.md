@@ -20,6 +20,9 @@ As I was used to JavaFX I also decided to learn and use QTDesigner for the UI of
 In the <em>Inference Notebook</em> section, you can see the results of the trained agent playing 2048, reaching a score of 2048. With longer training, the agent could potentially reach this score more consistently.
 </p>
 
+![image](https://github.com/user-attachments/assets/9ce39a63-9046-4e6b-b6b4-41f107b993a4)
+
+
 <p>
 The baseline results where the agent plays using a random policy are shown at the bottom of the <em>Experiment Notebook</em>.
 </p>
