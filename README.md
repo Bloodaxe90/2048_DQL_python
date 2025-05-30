@@ -15,32 +15,20 @@ As I was used to JavaFX I also decided to learn and use QTDesigner for the UI of
 <\p>
 
 <h2>Results</h2>
+<h3>Baseline</h3>
 
+![image](https://github.com/user-attachments/assets/849c20c3-d3c3-4754-8a0f-6974410169d9)
 <p>
-In the <em>Inference Notebook</em> section, you can see the results of the trained agent playing 2048, reaching a score of 2048. With longer training, the agent could potentially reach this score more consistently.
+These baseline results are when the agent played using a random policy. This image can originally be found in the Experiment Notebook.
 </p>
+<h3>Final Results</h3>
 
 ![image](https://github.com/user-attachments/assets/9ce39a63-9046-4e6b-b6b4-41f107b993a4)
 
-
 <p>
-The baseline results where the agent plays using a random policy are shown at the bottom of the <em>Experiment Notebook</em>.
+After a lot of testing I trained my model for 30,000 episodes which took about 4 days.
+These results show an amazing improvement from the baseline with the agent even reaching a score of 2048 occasionally, I am sure that with more training an agent would be able to consistently reach a value of 2048. The original image of the results can be found in the Inference Notebook.
 </p>
 
-This was my second attempt at implimenting Q-Learning for 2048, 
-a while ago i treid to implement it withought neural networks in java as 
-i had not yet realised that a tabular aproach only works for small state
-action spaces. 
-
-After this failure I started getting into neural networks, I first switched from java
-to python as python has a larger comunity and resources for machine learning. Then i set about 
-learning pytorch and then implemented my first deep neural net that set about to classify 6 types of images
-
-This was a great success and I learnt alot along the way, after that I set to work on this project and finally 
-successfully implemented deep q leanring on 2048
-
-In the inference notebook section you can see the results of my trained 30000 episode agent and that it reached a score of 2048, 
-if trained for longer the agent could reach this value more consitently, the base line results where the agent uses a random policy can 
-be seen at the bottom of the experiment notebook
 
 
