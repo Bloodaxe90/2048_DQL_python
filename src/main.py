@@ -86,8 +86,8 @@ def training():
     print(results)
 
 if __name__ == "__main__":
-    #main()
-    training()
+    main()
+    #training()
 
 
 

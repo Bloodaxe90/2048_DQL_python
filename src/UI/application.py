@@ -14,7 +14,7 @@ class Application(QMainWindow):
         super().__init__()
 
         loader = QUiLoader()
-        ui_file = QFile(f"{os.path.dirname(os.getcwd())}/resources/UI/2048.ui")
+        ui_file = QFile(f"{os.getcwd()}/resources/UI/2048.ui")
         if not ui_file.open(QFile.ReadOnly):
             print(f"Failed to open file: {ui_file.errorString()}")
             return
