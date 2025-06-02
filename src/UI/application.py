@@ -11,7 +11,7 @@ from src.utils.dq_utils import get_device
 
 class Application(QMainWindow):
 
-    def __init__(self):
+    def __init__(self, load_model_name: str, load_model_hidden_neurons: tuple):
         super().__init__()
 
         loader = QUiLoader()
@@ -24,16 +24,18 @@ class Application(QMainWindow):
         ui_file.close()
         self.setCentralWidget(self.ui)
 
-        self.controller = Controller(self.ui)
+        self.controller = Controller(self.ui, load_model_name, load_model_hidden_neurons)
 
     def keyPressEvent(self, event: QKeyEvent) -> None:
         self.controller.key_pressed(event)
 
 if __name__ == "__main__":
+    MODEL_LOAD_NAME: str = "the_big_one"
+    MODEL_LOAD_HIDDEN_NEURONS: tuple = (1024, 1024, 1024, 1024)
     print("Started")
     print(get_device())
     app = QApplication([])
-    window = Application()
+    window = Application(MODEL_LOAD_NAME, MODEL_LOAD_HIDDEN_NEURONS)
     window.show()
     window.setFixedSize(400, 450)
     app.exec()

@@ -11,7 +11,7 @@ from src.game_modes.dq_ai import QAI
 
 class Controller(QObject):
 
-    def __init__(self, scene):
+    def __init__(self, scene, model_load_name: str, model_load_hidden_neurons: tuple):
         super().__init__()
         self.scene = scene
         self.terminal_label: QLabel = self.scene.findChild(QLabel, "LTerminal")
@@ -25,8 +25,8 @@ class Controller(QObject):
 
         self.default = Default(self)
         self.qai = QAI(self,
-                       f"{os.path.dirname(os.path.dirname(os.getcwd()))}/resources/saved_models/main_net/the_big_one.pth",
-                       hidden_neurons=(1024, 1024, 1024, 1024))
+                       f"{os.path.dirname(os.path.dirname(os.getcwd()))}/resources/saved_models/main_net/{model_load_name}.pth",
+                       hidden_neurons=model_load_hidden_neurons)
 
     @Slot()
     def key_pressed(self, event: QKeyEvent):
