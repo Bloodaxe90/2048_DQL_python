@@ -17,11 +17,17 @@ class QAI(DeepQAgent):
         super().__init__(hidden_neurons= hidden_neurons)
         self.controller = controller
         self.controller.set_board(self.environment)
+        self.playing: bool = False
         load_model(self.main_network, model_dir, self.device)
 
     def play(self):
         print("Ai Playing")
+        self.playing = True
         while (result := self.check_terminal()) == "":
+            if not self.playing:
+                print("Ai Stopped")
+                return
+
             action = self.get_best_action()
             game_step(self.environment, action)
 
@@ -31,10 +37,10 @@ class QAI(DeepQAgent):
 
         self.controller.game_over(result)
 
-
-
     def reset(self):
         super().reset()
+        self.playing = False
         self.controller.set_board(self.environment)
+
 
 

@@ -7,7 +7,6 @@ from src.DQL.deep_q_learning import DeepQLearning
 from src.UI.application import Application
 from src.utils.dq_utils import *
 from src.utils.inference import *
-from src.utils.save_load import load_model
 
 
 def main():

@@ -41,8 +41,12 @@ class Controller(QObject):
                         self.default.play("LEFT")
                     case Qt.Key_Right:
                         self.default.play("RIGHT")
-            elif self.qai_radio.isChecked():
-                if event.key() == Qt.Key_S:
+            elif self.qai_radio.isChecked() and event.key() == Qt.Key_S:
+                if self.qai.playing:
+                    self.default_radio.setEnabled(True)
+                    self.qai.playing = False
+                else:
+                    self.default_radio.setEnabled(False)
                     self.qai.play()
         if event.key() == Qt.Key_Space:
             self.reset()
@@ -73,6 +77,7 @@ class Controller(QObject):
 
     def reset(self):
         self.stop = False
+        self.default_radio.setEnabled(True)
         self.terminal_label.setVisible(False)
 
 
