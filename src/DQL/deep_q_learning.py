@@ -127,10 +127,11 @@ class DeepQLearning:
         transitions = self.agent.replay_buffer.sample(self.BATCH_SIZE)
 
         #Format Transitions individual components for training
-        states = one_hot_states([states[0] for states in transitions], self.agent.input_neurons, self.device).to("cuda:0")
+        one_hot_device = "cuda:0" if self.device == "cuda" else self.device
+        states = one_hot_states([states[0] for states in transitions], self.agent.input_neurons, self.device).to(one_hot_device)
         action_indices = torch.tensor([self.agent.ACTIONS.index(actions[1]) for actions in transitions], device= self.device)
         rewards = torch.tensor([rewards[2] for rewards in transitions], dtype= torch.int64, device= self.device)
-        next_states = one_hot_states([next_states[3] for next_states in transitions], self.agent.input_neurons, self.device).to("cuda:0")
+        next_states = one_hot_states([next_states[3] for next_states in transitions], self.agent.input_neurons, self.device).to(one_hot_device)
         dones = torch.tensor([dones[4] for dones in transitions], device= self.device)
 
         self.agent.main_network.train()

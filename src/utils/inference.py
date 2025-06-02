@@ -11,7 +11,7 @@ def trail_ai(ai, episodes: int) -> dict:
             action = ai.get_best_action()
             game_step(ai.environment, action)
 
-        max_val = np.max(ai.environment)
+        max_val = int(np.max(ai.environment))
         ai.reset()
         print(i)
         dic[max_val] = dic.get(max_val, 0) + 1

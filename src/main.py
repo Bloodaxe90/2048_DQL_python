@@ -20,22 +20,42 @@ def main():
     app.exec()
 
 def training():
-    device = get_device()
-    set_seed(20)
-    print(device)
+    SEED: int = 20
+    EPISODES: int = 1
+    HIDDEN_NEURONS: tuple =(128, 128, 128, 128)
+    REPLAY_CAPACITY: int = 12800
+    BATCH_SIZE: int = 32
+    ALPHA: float = 0.00005
+    GAMMA: float = 0.9
+    TRIAL_NAME: str = "test"
+
+    MAIN_UPDATE_COUNT: int = 100
+    MAIN_UPDATE_FREQ: int = 1
+    TARGET_UPDATE_FREQ: int = 20
+    MODEL_SAVE_NAME: str = ''
+
+    set_seed(SEED)
+
+    print(get_device())
     dql = DeepQLearning(
-        agent= DeepQAgent(hidden_neurons= (1024, 1024, 1024, 1024),
-                          replay_capacity= 12800),
+        agent= DeepQAgent(hidden_neurons= HIDDEN_NEURONS,
+                          replay_capacity= REPLAY_CAPACITY),
         loss_fn= torch.nn.MSELoss(),
-        batch_size= 64,
+        batch_size= BATCH_SIZE,
+        alpha= ALPHA,
+        gamma= GAMMA
     )
 
     dql.train(
-        episodes=200,
-        trail_name="general_1",
+        episodes=EPISODES,
+        trail_name=TRIAL_NAME,
+        main_update_count= MAIN_UPDATE_COUNT,
+        main_update_freq= MAIN_UPDATE_FREQ,
+        target_update_freq= TARGET_UPDATE_FREQ,
+        model_save_name= MODEL_SAVE_NAME,
     )
 
-    results = trail_ai(dql, 400)
+    results = trail_ai(dql.agent, 400)
     #0.6 {128.0: 211, 64.0: 111, 256.0: 63, 32.0: 14}
     #0.4 {256.0: 78, 128.0: 221, 64.0: 91, 32.0: 7, 512.0: 2}
     #1.0 {64.0: 83, 128.0: 215, 256.0: 90, 32.0: 10, 512.0: 1}
@@ -66,8 +86,8 @@ def training():
     print(results)
 
 if __name__ == "__main__":
-    main()
-    #training()
+    #main()
+    training()
 
 
 

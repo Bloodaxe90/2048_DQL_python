@@ -25,7 +25,7 @@ class Controller(QObject):
 
         self.default = Default(self)
         self.qai = QAI(self,
-                       "/Users/Eric/PycharmProjects/2048/resources/saved_models/main_net/the_big_one.pth",
+                       f"{os.path.dirname(os.getcwd())}/resources/saved_models/main_net/the_big_one.pth",
                        hidden_neurons=(1024, 1024, 1024, 1024))
 
     @Slot()
@@ -65,9 +65,9 @@ class Controller(QObject):
         self.stop = True
         self.terminal_label.setVisible(True)
         if result == "W":
-            self.terminal_label.setText("WIN")
+            self.terminal_label.setText("WON")
         elif result == "L":
-            self.terminal_label.setText("LOSE")
+            self.terminal_label.setText("LOST")
         else:
             raise ValueError("Invalid result")
 
