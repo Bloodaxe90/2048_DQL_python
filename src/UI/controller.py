@@ -25,7 +25,7 @@ class Controller(QObject):
 
         self.default = Default(self)
         self.qai = QAI(self,
-                       f"{os.getcwd()}/resources/saved_models/main_net/the_big_one.pth",
+                       f"{os.path.dirname(os.path.dirname(os.getcwd()))}/resources/saved_models/main_net/the_big_one.pth",
                        hidden_neurons=(1024, 1024, 1024, 1024))
 
     @Slot()

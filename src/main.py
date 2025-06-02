@@ -1,24 +1,9 @@
-import os.path
-
-from PySide6.QtWidgets import QApplication
-
 from src.DQL.deep_q_agent import DeepQAgent
 from src.DQL.deep_q_learning import DeepQLearning
-from src.UI.application import Application
 from src.utils.dq_utils import *
 from src.utils.inference import *
 
-
 def main():
-    print("Started")
-    print(get_device())
-    app = QApplication([])
-    window = Application()
-    window.show()
-    window.setFixedSize(400,450)
-    app.exec()
-
-def training():
     SEED: int = 20
     EPISODES: int = 1
     HIDDEN_NEURONS: tuple =(128, 128, 128, 128)
@@ -31,7 +16,7 @@ def training():
     MAIN_UPDATE_COUNT: int = 100
     MAIN_UPDATE_FREQ: int = 1
     TARGET_UPDATE_FREQ: int = 20
-    MODEL_SAVE_NAME: str = ''
+    MODEL_SAVE_NAME: str = 'test'
 
     set_seed(SEED)
 
@@ -86,7 +71,6 @@ def training():
 
 if __name__ == "__main__":
     main()
-    #training()
 
 
 
